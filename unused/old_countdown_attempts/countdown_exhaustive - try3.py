@@ -50,40 +50,53 @@ def expand(node):
 def countdown_dfs(initial_state):
     """
     set<int> -> int
-    given starting number set; returns set of all reachable targets
+    given starting number set; returns qty of reachable targets from 100-999 inclusive
     """
-    reachable = set() # possible target numbers obtainable
-    reached = {} # Reached is dict<tuple
-    frontier = [initial_state]
+    reachable = set() # only will contain targets in 100-999 inclusive
+    for num in initial_state:
+        if 100 <= num <= 999:
+            reachable.add(num)
+    frontier = [Node(state=initial_state)]  # LIFO queue of nodes still needed to be processed
     while frontier != []:
-        current_numbers = frontier.pop()
-        if len(current_numbers) == 1:
+        node = frontier.pop()
+        for child in expand(node):
+            for num in child.state:
+                if 100 <= num <= 999:
+                    reachable.add(num)
+            frontier.append(child)
+    return len(reachable)
 
 
-    
-    # for num in initial_state:
-    #     if 100 <= num <= 999:
-    #         reachable.add(num)
-    # frontier = [Node(state=initial_state)]  # LIFO queue (stack)
-    # reached = set() # previously-reached states
-    # while frontier != []:
-    #     node = frontier.pop()
-    #     if frozenset(node.state) in reached:
-    #         continue
-    #     reached.add(frozenset(node.state))
-    #     for child in expand(node):
-    #         for num in child.state:
-    #             if 100 <= num <= 999:
-    #                 reachable.add(num)
-    #         frontier.append(child)
-    # return len(reachable)
+def countdown_dfs_cache(initial_state):
+    """
+    set<int> -> int
+    given starting number set; returns qty of reachable targets from 100-999 inclusive
+    """
+    reachable = set() # only will contain targets in 100-999 inclusive
+    for num in initial_state:
+        if 100 <= num <= 999:
+            reachable.add(num)
+    frontier = [Node(state=initial_state)]  # LIFO queue (stack)
+    reached = set() # previously-reached states
+    while frontier != []:
+        node = frontier.pop()
+        if frozenset(node.state) in reached:
+            continue
+        reached.add(frozenset(node.state))
+        for child in expand(node):
+            for num in child.state:
+                if 100 <= num <= 999:
+                    reachable.add(num)
+            frontier.append(child)
+    return len(reachable)
 
 
 
 
 def profiler():
     numbers = (1,3,7,10,25,50)
-    print(countdown_dfs(numbers))
+    # print(countdown_dfs(numbers))
+    print(countdown_dfs_cache(numbers))
 
 
 if __name__ == "__main__":
@@ -95,7 +108,7 @@ if __name__ == "__main__":
             clean_line = line.strip().replace("{", "").replace("}", "")
             nums = clean_line.strip().split(",")
             initial_state = tuple(int(n) for n in nums)
-            this_sum = countdown_dfs(initial_state)
+            this_sum = countdown_dfs_cache(initial_state)
             total += this_sum
             # if idx%100==0:
             print(f"Line {idx} cleared, this line sum is {this_sum}")
