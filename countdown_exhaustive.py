@@ -1,104 +1,80 @@
 # Hayden Schennum
 # 2025-11-19
 
-from itertools import combinations
-import cProfile
-
-# interp. each operation applied to 2 numbers used to move from one node -> another node
-# OPS_DICT is dict<str:(int int -> int|None)>
-# only positive integers allowed for input and output (so no need to check for divide by 0)
-OPS_DICT = {
-    "ADD": lambda x, y: x + y,
-    "SUB": lambda x, y: x - y if x > y else (y - x if y > x else None),
-    "MUL": lambda x, y: x * y,
-    "DIV": lambda x, y: x // y if x % y == 0 else (y // x if y % x == 0 else None)
-}
+import time
 
 
-class Node():
-    """
-    interp. a path and contains state+path_cost info
-    Node has:
-        state is tuple<int> - the current number set
-        parent is Node - pointer to previous node (before oper was applied to nums)
-        action is (int,int,Oper) - 2 chosen numbers and chosen operation used to move from parent to this node
-    """
-    def __init__(self,state,parent=None,action=None):
-        self.state = state
-        self.parent = parent
-        self.action = action
-
-
+# Node is tuple<int>|list<int> - current number set
 
 def expand(node):
     """
     Node -> next(Node)
     given node, yields the next node in the set of children nodes
+    INVARIANT: all elements of any number set must be positive integers
     """
-    s = node.state
-    for i,j in combinations(range(len(s)),2):
-        a, b = s[i], s[j]
-        for oper in ["ADD","SUB","MUL","DIV"]:
-            res = OPS_DICT[oper](b,a)
-            if res is None:
-                continue
-            sP = (res,) + s[:i] + s[i+1:j] + s[j+1:] # j > i guaranteed
-            yield Node(state=sP, parent=node, action=(a, b, oper))
-
+    idx_range = range(len(node))
+    for i in idx_range:
+        for j in range(i+1, len(node)):
+            a, b = node[i], node[j]
+            if a > b:
+                a,b = b,a # so b >= a in the following
+            
+            new_numbers = [b + a]
+            if b > a:
+                new_numbers.append(b - a)
+            new_numbers.append(b * a)
+            if b % a == 0:
+                new_numbers.append(b // a)
+            
+            for new_num in new_numbers:
+                child = [new_num]
+                for k in idx_range:
+                    if k != i and k != j:
+                        child.append(node[k])
+                yield child
 
 
 def countdown_dfs(initial_state):
     """
-    set<int> -> int
+    set<int> -> set<int>
     given starting number set; returns set of all reachable targets
     """
-    reachable = set() # possible target numbers obtainable
-    reached = {} # Reached is dict<tuple
-    frontier = [initial_state]
-    while frontier != []:
+    reachable = set() # set<int> - target numbers (100-999) that have been reached
+    frontier = [initial_state] # list<tuple<int>> - LIFO queue; UNSORTED number sets that still need to be expanded (newest number is leftmost)
+    initial_key = tuple(sorted(initial_state))
+    visited = {initial_key} # set<tuple<int>> - SORTED number sets that have already been seen (don't need to re-expand)
+    while len(frontier) > 0:
         current_numbers = frontier.pop()
+        for num in current_numbers:
+            if 100 <= num <= 999:
+                reachable.add(num)
         if len(current_numbers) == 1:
+            continue
+        for child in expand(current_numbers): # child is a "remaining_numbers" set after applying 1 oper to 2 nums in current_numbers
+            new_key = tuple(sorted(child))
+            if new_key not in visited:
+                visited.add(new_key)
+                frontier.append(child)
+    return reachable
 
 
-    
-    # for num in initial_state:
-    #     if 100 <= num <= 999:
-    #         reachable.add(num)
-    # frontier = [Node(state=initial_state)]  # LIFO queue (stack)
-    # reached = set() # previously-reached states
-    # while frontier != []:
-    #     node = frontier.pop()
-    #     if frozenset(node.state) in reached:
-    #         continue
-    #     reached.add(frozenset(node.state))
-    #     for child in expand(node):
-    #         for num in child.state:
-    #             if 100 <= num <= 999:
-    #                 reachable.add(num)
-    #         frontier.append(child)
-    # return len(reachable)
-
-
-
-
-def profiler():
-    numbers = (1,3,7,10,25,50)
-    print(countdown_dfs(numbers))
-
-
+# 1226_perfect_sets.txt -> should be 1103400 solvable
+# 13243_number_sets.txt -> should be 10871986 solvable
 if __name__ == "__main__":
-    # cProfile.run('profiler()')
+    print("Starting")
+    start_time = time.time()
     total = 0
     # with open("13243_number_sets.txt", "r") as fh:
     with open("1226_perfect_sets.txt", "r") as fh:
         for idx,line in enumerate(fh):
-            clean_line = line.strip().replace("{", "").replace("}", "")
-            nums = clean_line.strip().split(",")
+            nums = line.strip().split(",")
             initial_state = tuple(int(n) for n in nums)
-            this_sum = countdown_dfs(initial_state)
+            reachable_targets = countdown_dfs(initial_state)
+            this_sum = len(reachable_targets)
             total += this_sum
-            # if idx%100==0:
-            print(f"Line {idx} cleared, this line sum is {this_sum}")
+            if (idx+1)%100==0:
+                print(f"Line {idx+1} cleared, this line sum is {this_sum}, cumul time is {time.time()-start_time}")
+    print(f"Finished processing {idx+1} lines, total time is {time.time()-start_time}")
     print(total)
-    
+
     

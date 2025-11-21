@@ -8,9 +8,12 @@ from datetime import datetime
 import traceback
 
 
-# str -> str | None
-# given URL, sends HTTP GET request to URL and returns the text response
+
 def get_page_content(url):
+    """
+    str -> str | None
+    given URL, sends HTTP GET request to URL and returns the text response
+    """
     try:
         response = requests.get(url)
         if response.status_code == 200:
@@ -23,10 +26,13 @@ def get_page_content(url):
         return None
 
 
-# Match str -> bool
-# given contestant's regex match and target for this round;
-# returns True iff contestant matched tgt
+
 def contestant_solved(match, target):
+    """
+    Match str -> bool
+    given contestant's regex match and target for this round;
+    returns True iff contestant matched tgt
+    """
     if not match:
         return False
     amount = match.group(2)

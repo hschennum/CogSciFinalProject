@@ -1,71 +1,48 @@
-from collections import deque
 import time
 
 def countdown_dfs(numbers):
     reachable = set()
     visited = set()
-    frontier = deque()
+    frontier = []
+    frontier.append(numbers)
+    initial_key = tuple(sorted(numbers))
+    visited.add(initial_key)
     
-    initial_state = tuple(sorted(numbers))
-    frontier.append(initial_state)
-    visited.add(initial_state)
-    
-    while frontier:
-        current_state = frontier.pop()
-        current_numbers = list(current_state)
+    while len(frontier) > 0:
+        current_numbers = frontier.pop()
         
-        # Add all current numbers to reachable
         for num in current_numbers:
             if 100 <= num <= 999:
                 reachable.add(num)
         
-        # If we have only one number, we can't combine further
         if len(current_numbers) == 1:
             continue
             
-        # Try all pairs of numbers
         for i in range(len(current_numbers)):
             for j in range(i + 1, len(current_numbers)):
                 a, b = current_numbers[i], current_numbers[j]
-                
-                # Generate new numbers from a and b
-                new_numbers = []
-                
-                # Addition
-                new_numbers.append(a + b)
-                
-                # Subtraction (positive results only)
                 if a > b:
-                    new_numbers.append(a - b)
-                elif b > a:
+                    a,b = b,a # so b >= a in the following
+                
+                new_numbers = [b + a]
+                if b > a:
                     new_numbers.append(b - a)
-                
-                # Multiplication
-                new_numbers.append(a * b)
-                
-                # Division (integer results only)
-                if b != 0 and a % b == 0:
-                    new_numbers.append(a // b)
-                if a != 0 and b % a == 0:
+                new_numbers.append(b * a)
+                if b % a == 0:
                     new_numbers.append(b // a)
                 
-                # Create new state for each valid operation result
                 for new_num in new_numbers:
-                    if new_num <= 0:  # Only positive integers
-                        continue
-                        
-                    # Create new set of numbers
-                    remaining_numbers = []
+                    remaining_numbers = [new_num]
                     for k in range(len(current_numbers)):
                         if k != i and k != j:
                             remaining_numbers.append(current_numbers[k])
-                    remaining_numbers.append(new_num)
                     
-                    new_state = tuple(sorted(remaining_numbers))
-                    if new_state not in visited:
-                        visited.add(new_state)
+                    new_key = tuple(sorted(remaining_numbers))
+
+                    if new_key not in visited:
+                        visited.add(new_key)
+                        new_state = tuple(remaining_numbers)
                         frontier.append(new_state)
-    
     return reachable
 
 # Test with the given numbers
@@ -88,7 +65,7 @@ if __name__ == "__main__":
     with open("1226_perfect_sets.txt", "r") as fh:
         for idx,line in enumerate(fh):
             nums = line.strip().split(",")
-            initial_state = list(int(n) for n in nums)
+            initial_state = tuple(int(n) for n in nums)
             reachable_targets = countdown_dfs(initial_state)
             reachable_targets = [num for num in reachable_targets if 100 <= num <= 999]
             this_sum = len(reachable_targets)
