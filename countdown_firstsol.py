@@ -1,6 +1,7 @@
 # Hayden Schennum
 # 2025-11-20
 
+from collections import defaultdict
 import time
 
 
@@ -47,21 +48,60 @@ def expand(node):
                 yield Node(child_state, parent=node, action=(a, b, oper))
 
 
-def reconstruct_expression(node):
+def reconstruct_expression(node, target):
     """
     Node int -> str
-    given winning node, returns the math expression corresponding to node 
+    given winning node and target; returns the math expression corresponding to node 
     """
-    ...
+    path = [] # leaf -> root
+    while node is not None:
+        path.append(node)
+        node = node.parent
+    path.reverse()   # now root -> leaf
+
+    if target == 606:
+        x=1
+
+    num2expr = defaultdict(list) # dict<int:list<str>> - each number and all current expressions to reach it (can have 2 of same # at once)
+    for n in path[0].state:
+        num2expr[n].append(str(n))
+
+    for i in range(1, len(path)):
+        node = path[i]
+        a, b, oper = node.action
+        expr_a = num2expr[a].pop()
+        expr_b = num2expr[b].pop()
+        new_expr = f"({expr_b}{oper}{expr_a})"
+
+        result = None # the number result of (b oper a)
+        if oper == '+':
+            result = b + a
+        elif oper == '-':
+            result = b - a
+        elif oper == '*':
+            result = b * a
+        elif oper == '/':
+            result = b // a
+        
+        num2expr[result].append(new_expr)
+        if not num2expr[a]:
+            del num2expr[a]
+        if not num2expr[b]:
+            del num2expr[b]
+    
+    expr = num2expr[target][0]
+    if expr.startswith("(") and expr.endswith(")"):
+        expr = expr[1:-1]
+    return expr
 
 
 def countdown_dfs(initial_state, target):
     """
-    set<int> int -> str|None
+    tuple<int> int -> str|None
     given starting number set and target; returns solution expression (or None if unsolvable)
     """
     if target in initial_state:
-        return reconstruct_expression(Node(initial_state))
+        return str(target)
     frontier = [Node(initial_state)] # list<Node> - LIFO queue; UNSORTED number sets that still need to be expanded (newest number is leftmost)
     visited = set() # set<tuple<int>> - SORTED number sets that have already been seen (don't need to re-expand)
     initial_key = tuple(sorted(initial_state))
@@ -71,13 +111,16 @@ def countdown_dfs(initial_state, target):
         if len(current_node.state) == 1:
             continue
         for child in expand(current_node): # child is a "remaining_numbers" set after applying 1 oper to 2 nums in current_numbers
-            if target in child.state:
-                return reconstruct_expression(child)
-            new_key = tuple(sorted(child))
+            s = child.state
+            if target in s:
+                return reconstruct_expression(child,target)
+            if len(s) == 1:
+                continue
+            new_key = tuple(sorted(s))
             if new_key not in visited:
                 visited.add(new_key)
                 frontier.append(child)
-    return reachable
+    return None
 
 
 # 1226_perfect_sets.txt -> should be 1103400 solvable
@@ -85,18 +128,20 @@ def countdown_dfs(initial_state, target):
 if __name__ == "__main__":
     print("Starting")
     start_time = time.time()
-    total = 0
-    # with open("13243_number_sets.txt", "r") as fh:
-    with open("1226_perfect_sets.txt", "r") as fh:
-        for idx,line in enumerate(fh):
-            nums = line.strip().split(",")
-            initial_state = tuple(int(n) for n in nums)
-            reachable_targets = countdown_dfs(initial_state)
-            this_sum = len(reachable_targets)
-            total += this_sum
-            if (idx+1)%100==0:
-                print(f"Line {idx+1} cleared, this line sum is {this_sum}, cumul time is {time.time()-start_time}")
-    print(f"Finished processing {idx+1} lines, total time is {time.time()-start_time}")
-    print(total)
 
-    
+    with open("scraped_full.txt", "r") as fh:
+        for idx,line in enumerate(fh,1):
+            fields = line.strip().split(";")
+            if len(fields) != 7:
+                print(f"MALFORMED LINE AT IDX {idx}")
+                break
+            nums = tuple(int(n) for n in fields[3].split(","))
+            target = int(fields[4])
+
+            solution = countdown_dfs(nums, target)
+            
+            if (idx)%100==0:
+                print(f"Line {idx}, Target: {target}, Expression: {solution}, cumul time is {time.time()-start_time}")
+    print(f"Finished processing {idx} lines, total time is {time.time()-start_time}")
+
+
