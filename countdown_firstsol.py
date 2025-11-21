@@ -240,16 +240,36 @@ def countdown_bfs_prox_factor(initial_state, target, alpha, beta):
 
 
 
+def evaluate_params(alpha, beta, filepath):
+    """
+    float int str -> int float
+    given factor bonus, factor threshold, and input file;
+    returns amount of problems solved and total time taken
+    """
+    start_time = time.time()
+    solved = 0
+    with open(filepath, "r") as fh:
+        for line in fh:
+            fields = line.strip().split(";")
+            if len(fields) != 7:
+                continue
+            nums = tuple(int(n) for n in fields[3].split(","))
+            target = int(fields[4])
+            if countdown_bfs_prox_factor(nums, target, alpha, beta) is not None:
+                solved += 1
+    total_time = time.time() - start_time
+    return solved, total_time
+
 
 if __name__ == "__main__":
-    print("Starting")
     start_time = time.time()
     solved = 0
     unsolved = 0
     # with open("scraped_full.txt", "r") as fh:
-    with open("scraped_10000.txt", "r") as fh:
+    # with open("scraped_10000.txt", "r") as fh:
     # with open("T_only_scraped_10000.txt", "r") as fh:
-    # with open("F_only_scraped_10000.txt", "r") as fh:
+    with open("F_only_scraped_10000.txt", "r") as fh:
+    # with open("scraped_1000_gridsearch.txt", "r") as fh:
         for idx,line in enumerate(fh,1):
             fields = line.strip().split(";")
             if len(fields) != 7:
@@ -261,7 +281,7 @@ if __name__ == "__main__":
             # solution = countdown_dfs(nums, target)
             # solution = countdown_iterdeep(nums, target)
             # solution = countdown_bfs_prox(nums, target)
-            solution = countdown_bfs_prox_factor(nums, target, .5, 11)
+            solution = countdown_bfs_prox_factor(nums, target, .9, 1)
             if solution is None:
                 unsolved += 1
                 print(f"Unsolved line at idx {idx}")
@@ -271,6 +291,29 @@ if __name__ == "__main__":
                 print(f"Line {idx}, Target: {target}, Expression: {solution}, cumul time is {time.time()-start_time}")
     print(f"Finished processing {idx} lines, total time is {time.time()-start_time}")
     print(f"Solved: {solved}, Unsolved: {unsolved}")
+
+
+    # # alpha_range = [i*0.1 for i in range(0, 11)]
+    # # alpha_range = [i*0.1 for i in range(11, 16)]
+    # # alpha_range = [i*0.1 for i in range(16, 21)]
+    # # beta_range = list(range(1, 21))
+    # alpha_range = [i*0.1 for i in range(8, 11)]
+    # beta_range = list(range(1, 4))
+    # best_time = float('inf')
+    # best_params = None
+    # with open("param_results.txt", "w", buffering=1) as out_file:
+    #     out_file.write("alpha\tbeta\tsolved\ttime\n")
+    #     for alpha in alpha_range:
+    #         for beta in beta_range:
+    #             solved, total_time = evaluate_params(alpha, beta, "scraped_10000.txt")
+    #             # solved, total_time = evaluate_params(alpha, beta, "scraped_1000_gridsearch.txt")
+    #             out_file.write(f"{alpha}\t{beta}\t{solved}\t{total_time:.4f}\n")
+    #             print(f"alpha={alpha}, beta={beta}, solved={solved}, time={total_time:.4f}s")
+    #             if solved == 10000 and total_time < best_time:
+    #                 best_time = total_time
+    #                 best_params = (alpha, beta)
+    # print("Best params:", best_params, "Time:", best_time)
+
 
 
 # nums = tuple(sorted(num_field,reverse=True))

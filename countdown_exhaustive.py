@@ -192,7 +192,6 @@ def countdown_bfs_prox_factor(initial_state, target, alpha, beta):
 # 1226_perfect_sets.txt -> should be 1103400 solvable
 # 13243_number_sets.txt -> should be 10871986 solvable
 if __name__ == "__main__":
-    print("Starting")
     start_time = time.time()
     total = 0
     # with open("13243_number_sets.txt", "r") as fh:
