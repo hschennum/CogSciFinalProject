@@ -3,6 +3,7 @@
 
 import heapq
 import time
+import matplotlib.pyplot as plt
 
 
 # Node is tuple<int>|list<int> - current number set
@@ -192,24 +193,69 @@ def countdown_bfs_prox_factor(initial_state, target, alpha, beta):
 # 1226_perfect_sets.txt -> should be 1103400 solvable
 # 13243_number_sets.txt -> should be 10871986 solvable
 if __name__ == "__main__":
-    start_time = time.time()
-    total = 0
+    # start_time = time.time()
+    # total = 0
+    # # with open("13243_number_sets.txt", "r") as fh:
+    # # with open("1226_perfect_sets.txt", "r") as fh:
+    # with open("1000_number_sets.txt", "r") as fh:
+    #     for idx,line in enumerate(fh,1):
+    #         nums = line.strip().split(",")
+    #         initial_state = tuple(int(n) for n in nums)
+    #         reachable_targets = countdown_dfs(initial_state)
+    #         # reachable_targets = countdown_iterdeep(initial_state)
+    #         # reachable_targets = countdown_bfs_prox(initial_state, 550)
+    #         # reachable_targets = countdown_bfs_prox_factor(initial_state, 550, .5, 11)
+    #         this_sum = len(reachable_targets)
+    #         total += this_sum
+    #         if idx%100==0:
+    #             print(f"Line {idx} cleared, this line sum is {this_sum}, cumul time is {time.time()-start_time}")
+    # print(f"Finished processing {idx} lines, total time is {time.time()-start_time}")
+    # print(total)
+
+
+    # counts = [0]*1000  # list<int> - number of solvable instances for each target 0-999
+    # total_sets = 0 # number of sets in file (will sum to 13243)
     # with open("13243_number_sets.txt", "r") as fh:
-    # with open("1226_perfect_sets.txt", "r") as fh:
-    with open("1000_number_sets.txt", "r") as fh:
-        for idx,line in enumerate(fh,1):
-            nums = line.strip().split(",")
-            initial_state = tuple(int(n) for n in nums)
-            # reachable_targets = countdown_dfs(initial_state)
-            # reachable_targets = countdown_iterdeep(initial_state)
-            # reachable_targets = countdown_bfs_prox(initial_state, 550)
-            reachable_targets = countdown_bfs_prox_factor(initial_state, 550, .5, 11)
-            this_sum = len(reachable_targets)
-            total += this_sum
-            if (idx)%100==0:
-                print(f"Line {idx} cleared, this line sum is {this_sum}, cumul time is {time.time()-start_time}")
-    print(f"Finished processing {idx} lines, total time is {time.time()-start_time}")
-    print(total)
+    #     for idx,line in enumerate(fh,1):
+    #         nums = line.strip().split(",")
+    #         initial_state = tuple(int(n) for n in nums)
+    #         reachable_targets = countdown_dfs(initial_state)
+
+    #         for t in reachable_targets:
+    #             counts[t] += 1
+    #         total_sets += 1
+
+    #         if idx%100==0:
+    #             print(f"{idx} processed; Total sets so far: {total_sets}")
+    # print(f"total sets is {total_sets}")
+    # targets = list(range(100, 1000)) # [100 101 ... 999]
+    # proportions = [counts[t] / total_sets for t in targets]
+
+    # with open("prop_solvable.txt", "w") as fh:
+    #     for t, p in zip(targets, proportions):
+    #         fh.write(f"{t},{p}\n")
+    # print("Results saved")
+
+
+
+    targets = []
+    fractions = []
+    with open("prop_solvable.txt", "r") as fh:
+        for line in fh:
+            t, f = line.strip().split(",")
+            targets.append(int(t))
+            fractions.append(float(f))
+    plt.scatter(targets, fractions, s=8)
+    plt.xlabel("Target number")
+    plt.ylabel("Proportion of solvable number sets (out of 13243)")
+    plt.title("Proportion Solvable vs Target")
+    plt.grid(True, linestyle="--", alpha=0.6)
+    plt.xticks(range(100, 1001, 100))
+    plt.savefig("proportion_solvable.pdf", bbox_inches="tight")
+    plt.close()
+    print("Image saved")
+
+
 
     
 # for DFS without memoization (not like you'd ever want to), swap

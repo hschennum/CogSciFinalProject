@@ -265,10 +265,10 @@ if __name__ == "__main__":
     start_time = time.time()
     solved = 0
     unsolved = 0
-    # with open("scraped_full.txt", "r") as fh:
+    with open("scraped_full.txt", "r") as fh:
     # with open("scraped_10000.txt", "r") as fh:
     # with open("T_only_scraped_10000.txt", "r") as fh:
-    with open("F_only_scraped_10000.txt", "r") as fh:
+    # with open("F_only_scraped_10000.txt", "r") as fh:
     # with open("scraped_1000_gridsearch.txt", "r") as fh:
         for idx,line in enumerate(fh,1):
             fields = line.strip().split(";")
@@ -287,7 +287,7 @@ if __name__ == "__main__":
                 print(f"Unsolved line at idx {idx}")
             else:
                 solved += 1
-            if (idx)%1000==0:
+            if idx%1000==0:
                 print(f"Line {idx}, Target: {target}, Expression: {solution}, cumul time is {time.time()-start_time}")
     print(f"Finished processing {idx} lines, total time is {time.time()-start_time}")
     print(f"Solved: {solved}, Unsolved: {unsolved}")
