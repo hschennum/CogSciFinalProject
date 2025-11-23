@@ -109,6 +109,40 @@ def countdown_dfs(initial_state):
 
 
 
+def countdown_dfs_on_demand(initial_state):
+    """
+    tuple<int> -> set<int>
+    given starting number set; returns set of all reachable targets
+    """
+    reachable = set() # set<int> - target numbers (100-999) that have been reached
+    for num in initial_state:
+        if 100 <= num <= 999:
+            reachable.add(num)
+    initial_key = tuple(sorted(initial_state))
+    visited = {initial_key} # set<tuple<int>> - SORTED number sets that have already been seen (don't need to re-expand)
+    def dfs(node):
+        """
+        tuple<int> -> None
+        given starting number set; appends reachable targets and all childrens' reachable targets to "reachable"
+        """
+        if len(node) == 1:
+            return
+        for child in expand(node):
+            for num in child:
+                if 100 <= num <= 999:
+                    reachable.add(num)
+            if len(child) == 1:
+                continue
+            child_key = tuple(sorted(child))
+            if child_key not in visited:
+                visited.add(child_key)
+                dfs(child)
+    dfs(initial_state)
+    return reachable
+
+
+
+
 def countdown_bfs_prox(initial_state, target):
     """
     tuple<int> int -> set<int>
@@ -193,24 +227,25 @@ def countdown_bfs_prox_factor(initial_state, target, alpha, beta):
 # 1226_perfect_sets.txt -> should be 1103400 solvable
 # 13243_number_sets.txt -> should be 10871986 solvable
 if __name__ == "__main__":
-    # start_time = time.time()
-    # total = 0
-    # # with open("13243_number_sets.txt", "r") as fh:
-    # # with open("1226_perfect_sets.txt", "r") as fh:
-    # with open("1000_number_sets.txt", "r") as fh:
-    #     for idx,line in enumerate(fh,1):
-    #         nums = line.strip().split(",")
-    #         initial_state = tuple(int(n) for n in nums)
-    #         reachable_targets = countdown_dfs(initial_state)
-    #         # reachable_targets = countdown_iterdeep(initial_state)
-    #         # reachable_targets = countdown_bfs_prox(initial_state, 550)
-    #         # reachable_targets = countdown_bfs_prox_factor(initial_state, 550, .5, 11)
-    #         this_sum = len(reachable_targets)
-    #         total += this_sum
-    #         if idx%100==0:
-    #             print(f"Line {idx} cleared, this line sum is {this_sum}, cumul time is {time.time()-start_time}")
-    # print(f"Finished processing {idx} lines, total time is {time.time()-start_time}")
-    # print(total)
+    start_time = time.time()
+    total = 0
+    # with open("13243_number_sets.txt", "r") as fh:
+    # with open("1226_perfect_sets.txt", "r") as fh:
+    with open("1000_number_sets.txt", "r") as fh:
+        for idx,line in enumerate(fh,1):
+            nums = line.strip().split(",")
+            initial_state = tuple(int(n) for n in nums)
+            # reachable_targets = countdown_dfs(initial_state)
+            reachable_targets = countdown_dfs_on_demand(initial_state)
+            # reachable_targets = countdown_iterdeep(initial_state)
+            # reachable_targets = countdown_bfs_prox(initial_state, 550)
+            # reachable_targets = countdown_bfs_prox_factor(initial_state, 550, .5, 11)
+            this_sum = len(reachable_targets)
+            total += this_sum
+            if idx%100==0:
+                print(f"Line {idx} cleared, this line sum is {this_sum}, cumul time is {time.time()-start_time}")
+    print(f"Finished processing {idx} lines, total time is {time.time()-start_time}")
+    print(total)
 
 
     # counts = [0]*1000  # list<int> - number of solvable instances for each target 0-999
@@ -238,22 +273,22 @@ if __name__ == "__main__":
 
 
 
-    targets = []
-    fractions = []
-    with open("prop_solvable.txt", "r") as fh:
-        for line in fh:
-            t, f = line.strip().split(",")
-            targets.append(int(t))
-            fractions.append(float(f))
-    plt.scatter(targets, fractions, s=8)
-    plt.xlabel("Target number")
-    plt.ylabel("Proportion of solvable number sets (out of 13243)")
-    plt.title("Proportion Solvable vs Target")
-    plt.grid(True, linestyle="--", alpha=0.6)
-    plt.xticks(range(100, 1001, 100))
-    plt.savefig("proportion_solvable.pdf", bbox_inches="tight")
-    plt.close()
-    print("Image saved")
+    # targets = []
+    # fractions = []
+    # with open("prop_solvable.txt", "r") as fh:
+    #     for line in fh:
+    #         t, f = line.strip().split(",")
+    #         targets.append(int(t))
+    #         fractions.append(float(f))
+    # plt.scatter(targets, fractions, s=8)
+    # plt.xlabel("Target number")
+    # plt.ylabel("Proportion of solvable number sets (out of 13243)")
+    # plt.title("Proportion Solvable vs Target")
+    # plt.grid(True, linestyle="--", alpha=0.6)
+    # plt.xticks(range(100, 1001, 100))
+    # plt.savefig("proportion_solvable.pdf", bbox_inches="tight")
+    # plt.close()
+    # print("Image saved")
 
 
 
