@@ -223,6 +223,8 @@ def countdown_bfs_prox_factor(initial_state, target, alpha, beta):
 
 
 
+
+
 # 1000_number_sets.txt -> should be 817443 solvable
 # 1226_perfect_sets.txt -> should be 1103400 solvable
 # 13243_number_sets.txt -> should be 10871986 solvable
@@ -235,8 +237,8 @@ if __name__ == "__main__":
         for idx,line in enumerate(fh,1):
             nums = line.strip().split(",")
             initial_state = tuple(int(n) for n in nums)
-            # reachable_targets = countdown_dfs(initial_state)
-            reachable_targets = countdown_dfs_on_demand(initial_state)
+            reachable_targets = countdown_dfs(initial_state)
+            # reachable_targets = countdown_dfs_on_demand(initial_state)
             # reachable_targets = countdown_iterdeep(initial_state)
             # reachable_targets = countdown_bfs_prox(initial_state, 550)
             # reachable_targets = countdown_bfs_prox_factor(initial_state, 550, .5, 11)
